@@ -21,10 +21,10 @@ import javax.sql.DataSource;
 
 import org.activiti.api.process.model.events.ProcessDeployedEvent;
 import org.activiti.api.process.runtime.events.listener.ProcessRuntimeEventListener;
-import org.activiti.engine.cfg.ProcessEngineConfigurator;
-import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.api.runtime.shared.identity.UserGroupManager;
 import org.activiti.engine.RepositoryService;
+import org.activiti.engine.cfg.ProcessEngineConfigurator;
+import org.activiti.engine.impl.persistence.StrongUuidGenerator;
 import org.activiti.runtime.api.model.impl.APIProcessDefinitionConverter;
 import org.activiti.spring.ProcessDeployedEventProducer;
 import org.activiti.spring.SpringAsyncExecutor;
@@ -39,6 +39,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
@@ -159,11 +160,13 @@ public class ProcessEngineAutoConfiguration extends AbstractProcessEngineAutoCon
     @ConditionalOnMissingBean
     public ProcessDeployedEventProducer processDeployedEventProducer(RepositoryService repositoryService,
                                                                      APIProcessDefinitionConverter converter,
-                                                                     @Autowired(required = false) List<ProcessRuntimeEventListener<ProcessDeployedEvent>> listeners) {
+                                                                     @Autowired(required = false) List<ProcessRuntimeEventListener<ProcessDeployedEvent>> listeners,
+                                                                     ApplicationEventPublisher eventPublisher) {
         return new ProcessDeployedEventProducer(repositoryService,
                                                 converter,
                                                 Optional.ofNullable(listeners)
-                                                        .orElse(Collections.emptyList()));
+                                                        .orElse(Collections.emptyList()),
+                                                eventPublisher);
     }
 }
 
